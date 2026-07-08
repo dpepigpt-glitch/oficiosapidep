@@ -84,7 +84,7 @@ body > *{display:none !important;}
 </div>
 <div class="row">
 <div class="fg"><label>Cidade (para o cabeçalho):</label><input id="lgCid" type="text" placeholder="Ex: Campo Maior"></div>
-<div class="fg"><label>Sigla p/ nº do ofício (opcional):</label><input id="lgSig" type="text" placeholder="Ex: 2ª DPE CM/PI"></div>
+<div class="fg"><label>Sigla p/ nº do ofício (opcional):</label><input id="lgSig" type="text" placeholder="Ex: 2ª DPE CM/PI" oninput="this.value=this.value.toUpperCase()"></div>
 </div>
 <div class="row">
 <div class="fg"><label>Telefone para contato:</label><input id="lgTel" type="text" maxlength="15" placeholder="(86) 99999-9999" oninput="mtel(this)"></div>
@@ -121,7 +121,7 @@ body > *{display:none !important;}
 <div class="card">
 <h2>Dados do(a) Assistido(a)</h2>
 <div class="row">
-<div class="fg" style="flex:3;"><label>Nome Completo:</label><input id="dNome" type="text" oninput="this.value=ctit(this.value)"></div>
+<div class="fg" style="flex:3;"><label>Nome Completo:</label><input id="dNome" type="text"></div>
 <div class="fg"><label>CPF:</label><input id="dCpf" type="text" maxlength="14" placeholder="000.000.000-00" oninput="mcpf(this)"></div>
 <div class="fg"><label>Data de Nascimento:</label><input id="dNasc" type="text" maxlength="10" placeholder="DD/MM/AAAA" oninput="mdat(this)"></div>
 </div>
@@ -130,8 +130,8 @@ body > *{display:none !important;}
 <div class="card">
 <h2>Destino do Ofício</h2>
 <div class="row">
-<div class="fg" style="flex:2;"><label>Cartório / Serventia:</label><input id="dCart" type="text" placeholder="Ex: Cartório de Registro Civil das Pessoas Naturais" oninput="this.value=ctit(this.value)"></div>
-<div class="fg"><label>Cidade do Cartório:</label><input id="dCartCid" type="text" placeholder="Ex: Campo Maior - PI" oninput="this.value=ctit(this.value)"></div>
+<div class="fg" style="flex:2;"><label>Cartório / Serventia:</label><input id="dCart" type="text" placeholder="Ex: Cartório de Registro Civil das Pessoas Naturais"></div>
+<div class="fg"><label>Cidade do Cartório:</label><input id="dCartCid" type="text" placeholder="Ex: Campo Maior - PI"></div>
 </div>
 </div>
 
@@ -150,7 +150,7 @@ body > *{display:none !important;}
 <option value="int">Certidão de Inteiro Teor</option>
 </select>
 </div>
-<div class="fg" style="flex:2;"><label>Titular (se não for o assistido):</label><input id="dTit" type="text" placeholder="Deixe vazio se for o(a) próprio(a)" oninput="this.value=ctit(this.value)"></div>
+<div class="fg" style="flex:2;"><label>Titular (se não for o assistido):</label><input id="dTit" type="text" placeholder="Deixe vazio se for o(a) próprio(a)"></div>
 </div>
 <div class="row">
 <div class="fg"><label>Nº Registro / Termo:</label><input id="dNR" type="text"></div>
@@ -184,13 +184,13 @@ body > *{display:none !important;}
 
 <div style="font-weight:700;font-size:13px;color:var(--v3);margin-bottom:8px;">Dados do(a) Assistido(a)</div>
 <div class="row">
-<div class="fg" style="flex:3;"><label>Nome do(a) Assistido(a):</label><input id="pNome" type="text" oninput="this.value=ctit(this.value)"></div>
+<div class="fg" style="flex:3;"><label>Nome do(a) Assistido(a):</label><input id="pNome" type="text"></div>
 <div class="fg"><label>CPF:</label><input id="pCpf" type="text" maxlength="14" placeholder="000.000.000-00" oninput="mcpf(this)"></div>
 <div class="fg"><label>Sexo:</label><select id="pSexo"><option value="F">Feminino</option><option value="M">Masculino</option></select></div>
 </div>
 <div class="row">
 <div class="fg"><label>Data de Nascimento:</label><input id="pNasc" type="text" maxlength="10" placeholder="DD/MM/AAAA" oninput="mdat(this)"></div>
-<div class="fg" style="flex:2;"><label>Local de Nascimento:</label><input id="pLocal" type="text" placeholder="Ex: Santa Maria, município de Campo Maior - PI" oninput="this.value=ctit(this.value)"></div>
+<div class="fg" style="flex:2;"><label>Local de Nascimento:</label><input id="pLocal" type="text" placeholder="Ex: Santa Maria, município de Campo Maior - PI"></div>
 </div>
 <div class="row">
 <div class="fg"><label>Representado(a) por alguém?</label>
@@ -210,12 +210,12 @@ body > *{display:none !important;}
 </select>
 </div>
 <div class="fg" id="pRepOutroBox" style="display:none;"><label>Especifique o vínculo:</label><input id="pRepOutro" type="text" placeholder="Ex: Sobrinha"></div>
-<div class="fg" id="pRepNomeBox" style="flex:2;display:none;"><label>Nome do(a) Representante:</label><input id="pRepNome" type="text" oninput="this.value=ctit(this.value)"></div>
+<div class="fg" id="pRepNomeBox" style="flex:2;display:none;"><label>Nome do(a) Representante:</label><input id="pRepNome" type="text"></div>
 </div>
 
 <div style="font-weight:700;font-size:13px;color:var(--v3);margin:16px 0 8px;">Dados do Registro de Nascimento</div>
 <div class="row">
-<div class="fg" style="flex:3;"><label>Cartório (destinatário do ofício):</label><input id="pCart" type="text" placeholder="Ex: 1ª Serventia Extrajudicial de Registro Geral de Campo Maior - PI" oninput="this.value=ctit(this.value)"></div>
+<div class="fg" style="flex:3;"><label>Cartório (destinatário do ofício):</label><input id="pCart" type="text" placeholder="Ex: 1ª Serventia Extrajudicial de Registro Geral de Campo Maior - PI"></div>
 </div>
 <div class="row">
 <div class="fg"><label>Livro:</label><input id="pLiv" type="text" oninput="this.value=this.value.toUpperCase()"></div>
@@ -231,8 +231,8 @@ body > *{display:none !important;}
 <div class="fg"><label>Data do Casamento / Divórcio:</label><input id="pDtMot" type="text" maxlength="10" placeholder="DD/MM/AAAA" oninput="mdat(this)"></div>
 </div>
 <div class="row">
-<div class="fg"><label>Nome do(a) genitor(a) como está na certidão atual:</label><input id="pNomeAtual" type="text" oninput="this.value=ctit(this.value)"></div>
-<div class="fg"><label>Nome como deve ficar na nova certidão:</label><input id="pNomeNovo" type="text" oninput="this.value=ctit(this.value)"></div>
+<div class="fg"><label>Nome do(a) genitor(a) como está na certidão atual:</label><input id="pNomeAtual" type="text"></div>
+<div class="fg"><label>Nome como deve ficar na nova certidão:</label><input id="pNomeNovo" type="text"></div>
 </div>
 </div>
 
@@ -271,6 +271,22 @@ function mcpf(e){var v=e.value.replace(/\D/g,'');if(v.length>11)v=v.slice(0,11);
 function mdat(e){var v=e.value.replace(/\D/g,'');if(v.length>8)v=v.slice(0,8);v=v.replace(/(\d{2})(\d)/,'$1/$2');v=v.replace(/(\d{2})(\d)/,'$1/$2');e.value=v;}
 function mtel(e){var v=e.value.replace(/\D/g,'');if(v.length>11)v=v.slice(0,11);if(v.length<=10){v=v.replace(/(\d{2})(\d)/,'($1) $2');v=v.replace(/(\d{4})(\d)/,'$1-$2');}else{v=v.replace(/(\d{2})(\d)/,'($1) $2');v=v.replace(/(\d{5})(\d)/,'$1-$2');}e.value=v;}
 function ctit(s){return s.replace(/(?:^|[\s\-])\S/g,function(c){return c.toUpperCase();});}
+
+/* Capitaliza automaticamente a inicial de cada palavra em todos os campos de texto,
+   preservando a posição do cursor. Campos com formato próprio ficam de fora. */
+var SEM_CAP={lgTel:1,lgSig:1,dCpf:1,pCpf:1,dNasc:1,pNasc:1,pDtMot:1};
+document.addEventListener('input',function(ev){
+var el=ev.target;
+if(!el||!el.id||SEM_CAP[el.id])return;
+var tag=el.tagName;
+if(!((tag==='INPUT'&&el.type==='text')||tag==='TEXTAREA'))return;
+var novo=ctit(el.value);
+if(novo!==el.value){
+var pos=el.selectionStart;
+el.value=novo;
+try{el.selectionStart=el.selectionEnd=pos;}catch(e){}
+}
+});
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function val(id){return (document.getElementById(id).value||'').trim();}
 function tlbl(t){var m={nasc:'2ª Via da Certidão de Nascimento',cas:'2ª Via da Certidão de Casamento',obi:'2ª Via da Certidão de Óbito',int:'Certidão de Inteiro Teor'};return m[t]||t;}
