@@ -138,7 +138,6 @@ body > *{display:none !important;}
 <div class="row">
 <div class="fg" style="flex:3;"><label>Nome Completo:</label><input id="dNome" type="text"></div>
 <div class="fg"><label>CPF:</label><input id="dCpf" type="text" maxlength="14" placeholder="000.000.000-00" oninput="mcpf(this)"></div>
-<div class="fg"><label>Sexo:</label><select id="dSexo"><option value="F">Feminino</option><option value="M">Masculino</option></select></div>
 <div class="fg"><label>Data de Nascimento:</label><input id="dNasc" type="text" maxlength="10" placeholder="DD/MM/AAAA" oninput="mdat(this)"></div>
 </div>
 </div>
@@ -214,7 +213,6 @@ body > *{display:none !important;}
 <div class="row">
 <div class="fg" style="flex:3;"><label>Nome do(a) Assistido(a):</label><input id="pNome" type="text"></div>
 <div class="fg"><label>CPF:</label><input id="pCpf" type="text" maxlength="14" placeholder="000.000.000-00" oninput="mcpf(this)"></div>
-<div class="fg"><label>Sexo:</label><select id="pSexo"><option value="F">Feminino</option><option value="M">Masculino</option></select></div>
 </div>
 <div class="row">
 <div class="fg"><label>Data de Nascimento:</label><input id="pNasc" type="text" maxlength="10" placeholder="DD/MM/AAAA" oninput="mdat(this)"></div>
@@ -395,7 +393,8 @@ sugerirNums();
 
 /* ===== TEXTOS AUXILIARES DE GENERO ===== */
 function gDefensor(){return SS.cargo==='F'?{rep:'de sua representante',cargo:'Defensora Pública do Estado'}:{rep:'de seu representante',cargo:'Defensor Público do Estado'};}
-function gAssist(sx){return sx==='F'?{sr:'a Sra.',ass:'a assistida',assC:'A assistida',inscr:'inscrita',repd:'representada',oa:'a'}:{sr:'o Sr.',ass:'o assistido',assC:'O assistido',inscr:'inscrito',repd:'representado',oa:'o'};}
+/* Formas neutras: masculino com a terminação feminina entre parênteses */
+function gAssist(){return {sr:'o(a) Sr.(a)',ass:'o(a) assistido(a)',assC:'O(A) assistido(a)',inscr:'inscrito(a)',repd:'representado(a)',oa:'o(a)'};}
 
 /* ===== CABECALHO / FECHO COMUNS ===== */
 function ofHeader(numLabel,ender){
@@ -550,9 +549,9 @@ d.appendChild(div);
 document.getElementById('dOfFormTit').innerText='Solicitação #'+(ofsSalvos.length+1);
 }
 
-function buildOficioDocs(of,nome,cpf,nasc,sx,numLabel){
+function buildOficioDocs(of,nome,cpf,nasc,numLabel){
 var g=gDefensor();
-var a=gAssist(sx);
+var a=gAssist();
 var ender='À (o) Ilmo (a). Sr (a). Oficial (a) do(a) <strong>'+esc(of.cart)+'</strong> &ndash; '+esc(of.cartCid)+'.';
 var html=ofHeader(numLabel,ender);
 /* Assunto conforme o(s) tipo(s) de documento pedidos */
@@ -595,7 +594,7 @@ return html;
 }
 
 window.gerarOficioDocs=function(){
-var nome=val('dNome'),cpf=val('dCpf'),nasc=val('dNasc'),sx=document.getElementById('dSexo').value;
+var nome=val('dNome'),cpf=val('dCpf'),nasc=val('dNasc');
 var num=parseInt(val('dNum'),10);
 if(!nome){alert('Informe o nome do(a) assistido(a).');return;}
 if(!num||num<1){alert('Informe o número do ofício.');return;}
@@ -612,7 +611,7 @@ var htmls=[];
 pend.forEach(function(of,i){
 var n=num+i;
 var numLabel=numFmt(n);
-var html=buildOficioDocs(of,nome,cpf,nasc,sx,numLabel);
+var html=buildOficioDocs(of,nome,cpf,nasc,numLabel);
 salvarHist({id:Date.now()+i,tipoLabel:'2ª Vias / Inteiro Teor',numLabel:numLabel,assistido:nome,cartorio:of.cart,dt:new Date().toLocaleDateString('pt-BR'),html:html});
 registrarNum(n);
 htmls.push(html);
@@ -635,7 +634,7 @@ document.getElementById('pRepNomeBox').style.display=v?'block':'none';
 };
 
 window.gerarOficioPatro=function(){
-var nome=val('pNome'),cpf=val('pCpf'),sx=document.getElementById('pSexo').value;
+var nome=val('pNome'),cpf=val('pCpf');
 var nasc=val('pNasc'),local=val('pLocal'),cart=val('pCart');
 var liv=val('pLiv'),fol=val('pFol'),ord=val('pOrd'),mat=val('pMat');
 var motivo=val('pMotivo'),quem=val('pQuem'),dtMot=val('pDtMot');
@@ -651,7 +650,7 @@ if(!num||num<1){alert('Informe o número do ofício.');return;}
 
 var numLabel=numFmt(num);
 var g=gDefensor();
-var a=gAssist(sx);
+var a=gAssist();
 var quemTxt=quem==='genitora'?{de:'de sua genitora',oa:'a genitora',poss:'sua genitora'}:{de:'de seu genitor',oa:'o genitor',poss:'seu genitor'};
 var motivoTxt=motivo==='casamento'?'do casamento ocorrido':'do divórcio ocorrido';
 var repTxt='';
