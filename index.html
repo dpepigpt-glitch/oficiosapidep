@@ -427,12 +427,10 @@ h+='<div class="of-foot">'+esc(SS.eml)+' | www.defensoria.pi.def.br | '+esc(SS.t
 h+='</div>';
 return h;
 }
-function pgContatos(){
-return '<div class="of-p">Qualquer dificuldade, a Defensoria Pública pode ser contatada por meio do telefone '+esc(SS.tel)+' e pelo e-mail '+esc(SS.eml)+'.</div>';
-}
-function pgEntrega(plural){
-var doc=plural?'Os documentos solicitados poderão ser entregues':'O documento solicitado poderá ser entregue';
-return '<div class="of-p">'+doc+' diretamente ao(à) portador(a) deste ofício &mdash; o(a) próprio(a) assistido(a) requerente &mdash; ou encaminhad'+(plural?'os':'o')+' a esta Defensoria por meio do e-mail '+esc(SS.eml)+' ou mediante contato pelo telefone '+esc(SS.tel)+', aqui cadastrados.</div>';
+/* Comunicacao e entrega em um unico paragrafo, com telefone e e-mail nominados no texto */
+function pgEntregaComunic(plural){
+var q=plural?{quando:'os documentos estiverem prontos',ent:'Os documentos poderão ser entregues',enc:'encaminhados'}:{quando:'o documento estiver pronto',ent:'O documento poderá ser entregue',enc:'encaminhado'};
+return '<div class="of-p">Solicitamos que, quando '+q.quando+', esta Defensoria seja comunicada por meio do telefone '+esc(SS.tel)+' ou do e-mail '+esc(SS.eml)+'. '+q.ent+' diretamente ao(à) portador(a) deste ofício &mdash; o(a) próprio(a) assistido(a) requerente &mdash; ou '+q.enc+' ao e-mail indicado.</div>';
 }
 
 /* ===== IMPRIMIR ===== */
@@ -610,13 +608,11 @@ pgs+=', conforme documentação em anexo.';
 if(doc.anoVia)pgs+=' Considerando que a via que possui é datada de '+esc(doc.anoVia)+', buscou-se auxílio jurídico desta Defensoria Pública para obtenção de via atualizada do documento.';
 html+='<div class="of-p">'+pgs+'</div>';
 });
-html+='<div class="of-p">Por oportuno, com base nos documentos anexos, solicitamos que seja expedida a '+(plural?'2ª via dos documentos acima relacionados':'2ª via do documento acima relacionado')+(of.neg?', ou, restando negativa a busca, que seja expedida certidão que ateste a inexistência da lavratura do respectivo registro':'')+'.</div>';
 if(of.obs)html+='<div class="of-obs">Observação: '+esc(of.obs)+'</div>';
 html+='<div class="of-p">Prazo sugerido: 10 (dez) dias.</div>';
 html+='<div class="of-p">Requer-se a expedição d'+(plural?'os documentos':'o documento')+' sem exigência de pagamento de selo, taxas ou quaisquer emolumentos, em razão da hipossuficiência d'+a.oa+' requerente, devidamente comprovada, nos termos do art. 1.512, parágrafo único, do Código Civil e da Lei nº 9.534/1997.</div>';
-html+=pgEntrega(plural);
+html+=pgEntregaComunic(plural);
 if(SS.end)html+='<div class="of-p">Requer-se, ainda, caso conveniente, o envio d'+(plural?'os documentos':'o documento')+' ao endereço da Defensoria Pública, a saber: '+esc(SS.end)+'.</div>';
-html+='<div class="of-p">Solicitamos que, quando '+(plural?'os documentos estiverem prontos':'o documento estiver pronto')+', esta Defensoria seja comunicada em um dos contatos acima informados.</div>';
 html+='<div class="of-p">Caso não seja possível atender ao pleito, que seja expedida nota devolutiva.</div>';
 html+='<div class="of-p">Agradecendo antecipadamente a atenção dispensada, aproveito o ensejo para renovar protestos de estima e especial apreço.</div>';
 html+=ofFooter();
@@ -710,9 +706,7 @@ html+='<div class="of-p">Por oportuno, atendendo aos interesses d'+a.oa+' assist
 
 html+='<div class="of-p">Prazo sugerido para resposta: 10 (dez) dias.</div>';
 html+='<div class="of-p">Esclareço a Vossa Senhoria que a certidão deve ser emitida gratuitamente, vez que '+a.ass+' não tem condições de arcar com as custas referentes à expedição da referida certidão.</div>';
-html+=pgEntrega(false);
-html+='<div class="of-p">Solicitamos ainda que, quando o referido documento estiver pronto, esta Defensoria seja comunicada em um dos contatos acima informados.</div>';
-html+=pgContatos();
+html+=pgEntregaComunic(false);
 html+='<div class="of-p">Caso não seja possível atender ao pleito, que seja expedida nota devolutiva.</div>';
 html+='<div class="of-p">Agradecendo antecipadamente a atenção dispensada, aproveito o ensejo para renovar protestos de estima e especial apreço.</div>';
 html+=ofFooter();
