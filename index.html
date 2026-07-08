@@ -102,6 +102,9 @@ body > *{display:none !important;}
 <div class="fg"><label>Telefone para contato:</label><input id="lgTel" type="text" maxlength="15" placeholder="(86) 99999-9999" oninput="mtel(this)"></div>
 <div class="fg"><label>E-mail para contato:</label><input id="lgEml" type="email" placeholder="exemplo@defensoria.pi.def.br"></div>
 </div>
+<div class="row">
+<div class="fg"><label>Endereço da Defensoria (opcional, para envio de documentos):</label><input id="lgEnd" type="text" placeholder="Ex: Avenida Dirceu Arcoverde, 888, bairro Zend | 64.280-000 - Campo Maior - PI"></div>
+</div>
 <button class="btn bv" style="width:100%;margin-top:8px;" onclick="doLogin()">ENTRAR</button>
 <div class="errmsg" id="lerr"></div>
 </div>
@@ -135,6 +138,7 @@ body > *{display:none !important;}
 <div class="row">
 <div class="fg" style="flex:3;"><label>Nome Completo:</label><input id="dNome" type="text"></div>
 <div class="fg"><label>CPF:</label><input id="dCpf" type="text" maxlength="14" placeholder="000.000.000-00" oninput="mcpf(this)"></div>
+<div class="fg"><label>Sexo:</label><select id="dSexo"><option value="F">Feminino</option><option value="M">Masculino</option></select></div>
 <div class="fg"><label>Data de Nascimento:</label><input id="dNasc" type="text" maxlength="10" placeholder="DD/MM/AAAA" oninput="mdat(this)"></div>
 </div>
 </div>
@@ -163,16 +167,25 @@ body > *{display:none !important;}
 </select>
 </div>
 <div class="fg" style="flex:2;"><label>Titular (se não for o assistido):</label><input id="dTit" type="text" placeholder="Deixe vazio se for o(a) próprio(a)"></div>
+<div class="fg"><label>Nascimento do Titular:</label><input id="dNascTit" type="text" maxlength="10" placeholder="Vazio = o do assistido" oninput="mdat(this)"></div>
+</div>
+<div class="row">
+<div class="fg"><label>Nome do Pai (filiação, opcional):</label><input id="dPai" type="text"></div>
+<div class="fg"><label>Nome da Mãe (filiação, opcional):</label><input id="dMae" type="text"></div>
 </div>
 <div class="row">
 <div class="fg"><label>Nº Registro / Termo:</label><input id="dNR" type="text"></div>
 <div class="fg"><label>Livro:</label><input id="dLiv" type="text" oninput="this.value=this.value.toUpperCase()"></div>
 <div class="fg"><label>Folha:</label><input id="dFol" type="text"></div>
 <div class="fg" style="flex:2;"><label>Matrícula (opcional):</label><input id="dMat" type="text"></div>
+<div class="fg"><label>Ano da via antiga (opcional):</label><input id="dAnoVia" type="number" min="1900" max="2100" placeholder="Ex: 1976"></div>
 </div>
 <button class="btn bv bsm" onclick="addDoc()">+ Adicionar documento</button>
 </div>
-<div class="fg" style="margin-top:12px;">
+<div style="margin-top:12px;">
+<label style="font-size:12px;font-weight:700;color:var(--v3);display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="dNeg" style="width:auto;">Solicitar certidão negativa caso o registro não seja localizado</label>
+</div>
+<div class="fg" style="margin-top:10px;">
 <label>Observação para este ofício (opcional):</label>
 <textarea id="dObs" rows="2" placeholder="Ex: Pedido também encaminhado pelo CRC JUD..."></textarea>
 </div>
@@ -290,7 +303,7 @@ function ctit(s){return s.replace(/(?:^|[\s\-])\S/g,function(c){return c.toUpper
 
 /* Capitaliza automaticamente a inicial de cada palavra em todos os campos de texto,
    preservando a posição do cursor. Campos com formato próprio ficam de fora. */
-var SEM_CAP={lgTel:1,lgSig:1,dCpf:1,pCpf:1,dNasc:1,pNasc:1,pDtMot:1};
+var SEM_CAP={lgTel:1,lgSig:1,lgEnd:1,dCpf:1,pCpf:1,dNasc:1,dNascTit:1,pNasc:1,pDtMot:1};
 document.addEventListener('input',function(ev){
 var el=ev.target;
 if(!el||!el.id||SEM_CAP[el.id])return;
@@ -342,7 +355,7 @@ var nome=val('lgNome'),def=val('lgDef'),cid=val('lgCid'),tel=val('lgTel'),eml=va
 var err=document.getElementById('lerr');
 if(!nome||!def||!cid||!tel||!eml){err.innerText='Preencha nome, defensoria, cidade, telefone e e-mail.';err.style.display='block';return;}
 err.style.display='none';
-SS={nm:nome,cargo:document.getElementById('lgCargo').value,def:def,cid:cid,sig:val('lgSig'),tel:tel,eml:eml};
+SS={nm:nome,cargo:document.getElementById('lgCargo').value,def:def,cid:cid,sig:val('lgSig'),tel:tel,eml:eml,end:val('lgEnd')};
 try{localStorage.setItem('of_sess',JSON.stringify(SS));}catch(e){}
 init();
 };
@@ -355,6 +368,7 @@ document.getElementById('lgCid').value=SS.cid;
 document.getElementById('lgSig').value=SS.sig||'';
 document.getElementById('lgTel').value=SS.tel;
 document.getElementById('lgEml').value=SS.eml;
+document.getElementById('lgEnd').value=SS.end||'';
 document.getElementById('app').style.display='none';
 document.getElementById('loginScreen').style.display='flex';
 };
@@ -394,7 +408,7 @@ return h;
 function ofFooter(){
 var g=gDefensor();
 var h='<div class="of-sign"><div style="text-align:left;text-indent:42px;">Atenciosamente,</div><div class="sp" style="height:34px;"></div><div class="sl"></div><div class="sn">'+esc(SS.nm)+'</div><div>'+g.cargo+'</div><div>'+esc(SS.def)+'</div></div>';
-h+='<div class="of-foot">Ofício gerado pelo Sistema de Ofícios — Defensoria Pública do Estado do Piauí</div>';
+h+='<div class="of-foot">'+esc(SS.eml)+' | www.defensoria.pi.def.br | '+esc(SS.tel)+(SS.end?'<br>'+esc(SS.end):'')+'</div>';
 h+='</div>';
 return h;
 }
@@ -470,8 +484,8 @@ var ofsSalvos=[];
 window.addDoc=function(){
 var tipo=val('dTipo');
 if(!tipo){alert('Selecione o tipo de documento.');return;}
-docs.push({tipo:tipo,tit:val('dTit'),nr:val('dNR'),livro:val('dLiv'),folha:val('dFol'),mat:val('dMat')});
-['dTipo','dTit','dNR','dLiv','dFol','dMat'].forEach(function(id){document.getElementById(id).value='';});
+docs.push({tipo:tipo,tit:val('dTit'),nascTit:val('dNascTit'),pai:val('dPai'),mae:val('dMae'),nr:val('dNR'),livro:val('dLiv'),folha:val('dFol'),mat:val('dMat'),anoVia:val('dAnoVia')});
+['dTipo','dTit','dNascTit','dPai','dMae','dNR','dLiv','dFol','dMat','dAnoVia'].forEach(function(id){document.getElementById(id).value='';});
 renderDocs();
 };
 window.remDoc=function(i){docs.splice(i,1);renderDocs();};
@@ -481,7 +495,10 @@ docs.forEach(function(doc,i){
 var it=document.createElement('div');it.className='doc-item';
 it.innerHTML='<span style="flex:1;"><strong>'+tlbl(doc.tipo)+'</strong>'
 +(doc.tit?' | Titular: '+esc(doc.tit):'')
-+(doc.nr?' | Reg.: '+esc(doc.nr):'')+(doc.livro?' | Livro: '+esc(doc.livro):'')+(doc.folha?' | Folha: '+esc(doc.folha):'')+(doc.mat?' | Matrícula: '+esc(doc.mat):'')+'</span>'
++(doc.nascTit?' | Nasc.: '+esc(doc.nascTit):'')
++((doc.pai||doc.mae)?' | Filiação: '+esc([doc.pai,doc.mae].filter(Boolean).join(' e ')):'')
++(doc.nr?' | Reg.: '+esc(doc.nr):'')+(doc.livro?' | Livro: '+esc(doc.livro):'')+(doc.folha?' | Folha: '+esc(doc.folha):'')+(doc.mat?' | Matrícula: '+esc(doc.mat):'')
++(doc.anoVia?' | Via antiga: '+esc(doc.anoVia):'')+'</span>'
 +'<button class="btn br bsm" onclick="remDoc('+i+')">X</button>';
 d.appendChild(it);
 });
@@ -491,13 +508,14 @@ d.appendChild(it);
 function ofFormPreenchido(){return !!(val('dCart')||val('dCartCid')||docs.length||val('dObs'));}
 function limparOfForm(){
 docs=[];renderDocs();
-['dCart','dCartCid','dObs','dTipo','dTit','dNR','dLiv','dFol','dMat'].forEach(function(id){document.getElementById(id).value='';});
+['dCart','dCartCid','dObs','dTipo','dTit','dNascTit','dPai','dMae','dNR','dLiv','dFol','dMat','dAnoVia'].forEach(function(id){document.getElementById(id).value='';});
+document.getElementById('dNeg').checked=false;
 }
 window.salvarOfAtual=function(){
 var cart=val('dCart'),cartCid=val('dCartCid');
 if(!cart||!cartCid){alert('Informe o cartório e a cidade de destino desta solicitação.');return;}
 if(!docs.length){alert('Adicione ao menos um documento nesta solicitação.');return;}
-ofsSalvos.push({cart:cart,cartCid:cartCid,obs:val('dObs'),docs:docs.slice()});
+ofsSalvos.push({cart:cart,cartCid:cartCid,obs:val('dObs'),neg:document.getElementById('dNeg').checked,docs:docs.slice()});
 limparOfForm();
 renderOfsSalvos();
 };
@@ -508,6 +526,7 @@ limparOfForm();
 document.getElementById('dCart').value=of.cart;
 document.getElementById('dCartCid').value=of.cartCid;
 document.getElementById('dObs').value=of.obs||'';
+document.getElementById('dNeg').checked=!!of.neg;
 docs=of.docs.slice();
 renderDocs();
 renderOfsSalvos();
@@ -531,30 +550,44 @@ d.appendChild(div);
 document.getElementById('dOfFormTit').innerText='Solicitação #'+(ofsSalvos.length+1);
 }
 
-function buildOficioDocs(of,nome,cpf,nasc,numLabel){
+function buildOficioDocs(of,nome,cpf,nasc,sx,numLabel){
 var g=gDefensor();
+var a=gAssist(sx);
 var ender='À (o) Ilmo (a). Sr (a). Oficial (a) do(a) <strong>'+esc(of.cart)+'</strong> &ndash; '+esc(of.cartCid)+'.';
 var html=ofHeader(numLabel,ender);
-html+='<div class="of-ass">Assunto: Solicitação de Documentos &ndash; Assistência Jurídica Gratuita.</div>';
-html+='<div class="of-p">A Defensoria Pública do Estado do Piauí, por meio '+g.rep+' com desempenho de atribuições no município de '+esc(SS.cid)+'-PI, no exercício de suas atribuições constitucionais previstas no art. 134 da Constituição Federal e com fulcro no art. 33, XXIV, da Lei Complementar Estadual nº 59/05, vem, perante V. Sa., solicitar a expedição dos documentos abaixo relacionados, em favor de <strong>'+esc(nome)+'</strong>'+(cpf?', CPF nº '+esc(cpf):'')+(nasc?', nascido(a) em '+esc(nasc):'')+'.</div>';
-html+='<div class="of-p">O(A) requerente é pessoa hipossuficiente, na condição de assistido(a) desta Defensoria Pública, fazendo jus à gratuidade nos termos do art. 1.512, parágrafo único, do Código Civil e da Lei nº 9.534/1997, que assegura a gratuidade no fornecimento das certidões de registro civil.</div>';
-html+='<div class="of-p" style="text-indent:0;"><strong>Documentos solicitados:</strong><ol>';
+/* Assunto conforme o(s) tipo(s) de documento pedidos */
+var tipos=[];of.docs.forEach(function(doc){var l=tlbl(doc.tipo);if(tipos.indexOf(l)<0)tipos.push(l);});
+var assunto=tipos.length===1?'Expedição de '+tipos[0]:'Expedição de Certidões de Registro Civil ('+tipos.join('; ')+')';
+if(of.neg)assunto+=' ou Certidão Negativa';
+html+='<div class="of-ass">Assunto: '+assunto+'.</div>';
+var plural=of.docs.length>1;
+html+='<div class="of-p">A Defensoria Pública do Estado do Piauí, por meio '+g.rep+' com desempenho de atribuições no município de '+esc(SS.cid)+'-PI, no exercício de suas atribuições constitucionais previstas no art. 134 da Constituição Federal, vem, perante V. Sa., com fulcro no art. 33, XXIV, da Lei Complementar Estadual nº 59/05, assistindo '+a.sr+' <strong>'+esc(nome)+'</strong>'+(cpf?', '+a.inscr+' no CPF sob nº '+esc(cpf):'')+', solicitar a expedição d'+(plural?'os documentos abaixo relacionados':'o documento abaixo relacionado')+(of.neg?', ou, restando negativa a busca, de certidão que ateste a inexistência da lavratura do respectivo registro':'')+'.</div>';
+/* Um parágrafo narrativo por documento, nos moldes do modelo */
 of.docs.forEach(function(doc){
-var li='<strong>'+tlbl(doc.tipo)+'</strong>';
-li+=' &ndash; Titular: '+esc(doc.tit||nome);
-var campos=[];
-if(doc.mat)campos.push('Matrícula: '+esc(doc.mat));
-if(doc.nr)campos.push('Registro/Termo: '+esc(doc.nr));
-if(doc.livro)campos.push('Livro: '+esc(doc.livro));
-if(doc.folha)campos.push('Folha: '+esc(doc.folha));
-if(campos.length)li+=' | '+campos.join(' | ');
-html+='<li>'+li+'</li>';
+var titNome=doc.tit||nome;
+var titNasc=doc.tit?doc.nascTit:(doc.nascTit||nasc);
+var pgs='<strong>'+tlbl(doc.tipo)+'</strong> &ndash; titular: <strong>'+esc(titNome)+'</strong>';
+if(doc.pai&&doc.mae)pgs+=', filho(a) de '+esc(doc.pai)+' e '+esc(doc.mae);
+else if(doc.pai)pgs+=', filho(a) de '+esc(doc.pai);
+else if(doc.mae)pgs+=', filho(a) de '+esc(doc.mae);
+if(titNasc)pgs+=', nascido(a) em '+esc(dataExtensoBR(titNasc));
+var reg=[];
+if(doc.livro)reg.push('sob o livro '+esc(doc.livro));
+if(doc.folha)reg.push('às folhas: '+esc(doc.folha));
+if(doc.nr)reg.push('termo: '+esc(doc.nr));
+if(doc.mat)reg.push('matrícula: '+esc(doc.mat));
+if(reg.length)pgs+='. O respectivo registro fora lavrado no(a) '+esc(of.cart)+' de '+esc(of.cartCid)+', '+reg.join(', ');
+pgs+=', conforme documentação em anexo.';
+if(doc.anoVia)pgs+=' Considerando que a via que possui é datada de '+esc(doc.anoVia)+', buscou-se auxílio jurídico desta Defensoria Pública para obtenção de via atualizada do documento.';
+html+='<div class="of-p">'+pgs+'</div>';
 });
-html+='</ol></div>';
+html+='<div class="of-p">Por oportuno, com base nos documentos anexos, solicitamos que seja expedida a '+(plural?'2ª via dos documentos acima relacionados':'2ª via do documento acima relacionado')+(of.neg?', ou, restando negativa a busca, que seja expedida certidão que ateste a inexistência da lavratura do respectivo registro':'')+'.</div>';
 if(of.obs)html+='<div class="of-obs">Observação: '+esc(of.obs)+'</div>';
-html+='<div class="of-p">Prazo sugerido para resposta: 30 (trinta) dias.</div>';
-html+=pgEntrega(of.docs.length>1);
-html+='<div class="of-p">Solicitamos que, quando os documentos estiverem prontos, esta Defensoria seja comunicada em um dos contatos acima informados.</div>';
+html+='<div class="of-p">Prazo sugerido: 10 (dez) dias.</div>';
+html+='<div class="of-p">Requer-se a expedição d'+(plural?'os documentos':'o documento')+' sem exigência de pagamento de selo, taxas ou quaisquer emolumentos, em razão da hipossuficiência d'+a.oa+' requerente, devidamente comprovada, nos termos do art. 1.512, parágrafo único, do Código Civil e da Lei nº 9.534/1997.</div>';
+html+=pgEntrega(plural);
+if(SS.end)html+='<div class="of-p">Requer-se, ainda, caso conveniente, o envio d'+(plural?'os documentos':'o documento')+' ao endereço da Defensoria Pública, a saber: '+esc(SS.end)+'.</div>';
+html+='<div class="of-p">Solicitamos que, quando '+(plural?'os documentos estiverem prontos':'o documento estiver pronto')+', esta Defensoria seja comunicada em um dos contatos acima informados.</div>';
 html+='<div class="of-p">Caso não seja possível atender ao pleito, que seja expedida nota devolutiva.</div>';
 html+='<div class="of-p">Agradecendo antecipadamente a atenção dispensada, aproveito o ensejo para renovar protestos de estima e especial apreço.</div>';
 html+=ofFooter();
@@ -562,7 +595,7 @@ return html;
 }
 
 window.gerarOficioDocs=function(){
-var nome=val('dNome'),cpf=val('dCpf'),nasc=val('dNasc');
+var nome=val('dNome'),cpf=val('dCpf'),nasc=val('dNasc'),sx=document.getElementById('dSexo').value;
 var num=parseInt(val('dNum'),10);
 if(!nome){alert('Informe o nome do(a) assistido(a).');return;}
 if(!num||num<1){alert('Informe o número do ofício.');return;}
@@ -572,14 +605,14 @@ if(ofFormPreenchido()){
 var cart=val('dCart'),cartCid=val('dCartCid');
 if(!cart||!cartCid){alert('Informe o cartório e a cidade de destino da solicitação em preenchimento (ou limpe-a).');return;}
 if(!docs.length){alert('Adicione ao menos um documento na solicitação em preenchimento (ou limpe-a).');return;}
-pend.push({cart:cart,cartCid:cartCid,obs:val('dObs'),docs:docs.slice()});
+pend.push({cart:cart,cartCid:cartCid,obs:val('dObs'),neg:document.getElementById('dNeg').checked,docs:docs.slice()});
 }
 if(!pend.length){alert('Preencha ao menos uma solicitação de ofício.');return;}
 var htmls=[];
 pend.forEach(function(of,i){
 var n=num+i;
 var numLabel=numFmt(n);
-var html=buildOficioDocs(of,nome,cpf,nasc,numLabel);
+var html=buildOficioDocs(of,nome,cpf,nasc,sx,numLabel);
 salvarHist({id:Date.now()+i,tipoLabel:'2ª Vias / Inteiro Teor',numLabel:numLabel,assistido:nome,cartorio:of.cart,dt:new Date().toLocaleDateString('pt-BR'),html:html});
 registrarNum(n);
 htmls.push(html);
