@@ -166,9 +166,25 @@ body > *{display:none !important;}
 </select>
 </div>
 <div class="fg" style="flex:2;"><label>Titular (se não for o assistido):</label><input id="dTit" type="text" placeholder="Deixe vazio se for o(a) próprio(a)"></div>
-<div class="fg"><label>Nascimento do Titular:</label><input id="dNascTit" type="text" maxlength="10" placeholder="Vazio = o do assistido" oninput="mdat(this)"></div>
+<div class="fg"><label>Vínculo com o(a) assistido(a):</label>
+<select id="dVinc" onchange="onVincChange()">
+<option value="">O(A) próprio(a) assistido(a)</option>
+<option value="filho(a)">Filho(a)</option>
+<option value="pai/mãe">Pai / Mãe</option>
+<option value="cônjuge/companheiro(a)">Cônjuge / Companheiro(a)</option>
+<option value="irmão/irmã">Irmão / Irmã</option>
+<option value="avô/avó">Avô / Avó</option>
+<option value="neto(a)">Neto(a)</option>
+<option value="tio(a)">Tio(a)</option>
+<option value="sobrinho(a)">Sobrinho(a)</option>
+<option value="tutelado(a)/curatelado(a)">Tutelado(a) / Curatelado(a)</option>
+<option value="outro">Outro</option>
+</select>
+</div>
+<div class="fg" id="dVincOutroBox" style="display:none;"><label>Especifique o vínculo:</label><input id="dVincOutro" type="text" placeholder="Ex: Enteado(a)"></div>
 </div>
 <div class="row">
+<div class="fg"><label>Nascimento do Titular:</label><input id="dNascTit" type="text" maxlength="10" placeholder="Vazio = o do assistido" oninput="mdat(this)"></div>
 <div class="fg"><label>Nome do Pai (filiação, opcional):</label><input id="dPai" type="text"></div>
 <div class="fg"><label>Nome da Mãe (filiação, opcional):</label><input id="dMae" type="text"></div>
 </div>
@@ -480,11 +496,22 @@ renderHist();
    ============================================================ */
 var docs=[];
 var ofsSalvos=[];
+window.onVincChange=function(){
+document.getElementById('dVincOutroBox').style.display=(document.getElementById('dVinc').value==='outro')?'block':'none';
+};
+function vincDoc(){
+var v=document.getElementById('dVinc').value;
+if(v==='outro')return val('dVincOutro').toLowerCase();
+return v;
+}
 window.addDoc=function(){
 var tipo=val('dTipo');
 if(!tipo){alert('Selecione o tipo de documento.');return;}
-docs.push({tipo:tipo,tit:val('dTit'),nascTit:val('dNascTit'),pai:val('dPai'),mae:val('dMae'),nr:val('dNR'),livro:val('dLiv'),folha:val('dFol'),mat:val('dMat'),anoVia:val('dAnoVia')});
-['dTipo','dTit','dNascTit','dPai','dMae','dNR','dLiv','dFol','dMat','dAnoVia'].forEach(function(id){document.getElementById(id).value='';});
+var tit=val('dTit');
+if(!tit&&document.getElementById('dVinc').value){alert('Informe o nome do titular ou deixe o vínculo como "O(A) próprio(a) assistido(a)".');return;}
+docs.push({tipo:tipo,tit:tit,vinc:tit?vincDoc():'',nascTit:val('dNascTit'),pai:val('dPai'),mae:val('dMae'),nr:val('dNR'),livro:val('dLiv'),folha:val('dFol'),mat:val('dMat'),anoVia:val('dAnoVia')});
+['dTipo','dTit','dVinc','dVincOutro','dNascTit','dPai','dMae','dNR','dLiv','dFol','dMat','dAnoVia'].forEach(function(id){document.getElementById(id).value='';});
+onVincChange();
 renderDocs();
 };
 window.remDoc=function(i){docs.splice(i,1);renderDocs();};
@@ -493,7 +520,8 @@ var d=document.getElementById('dLista');d.innerHTML='';
 docs.forEach(function(doc,i){
 var it=document.createElement('div');it.className='doc-item';
 it.innerHTML='<span style="flex:1;"><strong>'+tlbl(doc.tipo)+'</strong>'
-+(doc.tit?' | Titular: '+esc(doc.tit):'')
++(doc.tit?' | Titular: '+esc(doc.tit):' | Titular: o(a) próprio(a) assistido(a)')
++(doc.vinc?' ('+esc(doc.vinc)+' do(a) assistido(a))':'')
 +(doc.nascTit?' | Nasc.: '+esc(doc.nascTit):'')
 +((doc.pai||doc.mae)?' | Filiação: '+esc([doc.pai,doc.mae].filter(Boolean).join(' e ')):'')
 +(doc.nr?' | Reg.: '+esc(doc.nr):'')+(doc.livro?' | Livro: '+esc(doc.livro):'')+(doc.folha?' | Folha: '+esc(doc.folha):'')+(doc.mat?' | Matrícula: '+esc(doc.mat):'')
@@ -507,8 +535,9 @@ d.appendChild(it);
 function ofFormPreenchido(){return !!(val('dCart')||val('dCartCid')||docs.length||val('dObs'));}
 function limparOfForm(){
 docs=[];renderDocs();
-['dCart','dCartCid','dObs','dTipo','dTit','dNascTit','dPai','dMae','dNR','dLiv','dFol','dMat','dAnoVia'].forEach(function(id){document.getElementById(id).value='';});
+['dCart','dCartCid','dObs','dTipo','dTit','dVinc','dVincOutro','dNascTit','dPai','dMae','dNR','dLiv','dFol','dMat','dAnoVia'].forEach(function(id){document.getElementById(id).value='';});
 document.getElementById('dNeg').checked=false;
+onVincChange();
 }
 window.salvarOfAtual=function(){
 var cart=val('dCart'),cartCid=val('dCartCid');
@@ -566,6 +595,7 @@ of.docs.forEach(function(doc){
 var titNome=doc.tit||nome;
 var titNasc=doc.tit?doc.nascTit:(doc.nascTit||nasc);
 var pgs='<strong>'+tlbl(doc.tipo)+'</strong> &ndash; titular: <strong>'+esc(titNome)+'</strong>';
+if(doc.tit&&doc.vinc)pgs+=', '+esc(doc.vinc)+' do(a) assistido(a)';
 if(doc.pai&&doc.mae)pgs+=', filho(a) de '+esc(doc.pai)+' e '+esc(doc.mae);
 else if(doc.pai)pgs+=', filho(a) de '+esc(doc.pai);
 else if(doc.mae)pgs+=', filho(a) de '+esc(doc.mae);
