@@ -140,16 +140,16 @@ body > *{display:none !important;}
 </div>
 
 <div class="card">
-<h2>Destino do Ofício</h2>
+<h2>Solicitações de Ofício</h2>
+<div class="hint">Cada solicitação = 1 ofício = 1 cartório de destino. No mesmo ofício você pode pedir documentos de <strong>vários titulares</strong> (ex: dois filhos diferentes) — basta informar o titular em cada documento. Se precisar de <strong>cartórios diferentes</strong>, salve esta solicitação e inicie outra: todas serão impressas juntas.</div>
+<div id="dOfsSalvos"></div>
+<div style="font-weight:700;font-size:13px;color:var(--v3);margin-bottom:8px;" id="dOfFormTit">Solicitação #1</div>
 <div class="row">
 <div class="fg" style="flex:2;"><label>Cartório / Serventia:</label><input id="dCart" type="text" placeholder="Ex: Cartório de Registro Civil das Pessoas Naturais"></div>
 <div class="fg"><label>Cidade do Cartório:</label><input id="dCartCid" type="text" placeholder="Ex: Campo Maior - PI"></div>
 </div>
-</div>
-
-<div class="card">
-<h2>Documentos Solicitados</h2>
-<div class="hint">Adicione um item para cada documento. Se o titular for outra pessoa (filho, genitor etc.), informe o nome do titular; se for o(a) próprio(a) assistido(a), deixe em branco.</div>
+<div style="font-weight:700;font-size:13px;color:var(--v3);margin:10px 0 6px;">Documentos deste ofício</div>
+<div class="hint" style="margin-bottom:8px;">Se o titular for outra pessoa (filho, genitor etc.), informe o nome do titular; se for o(a) próprio(a) assistido(a), deixe em branco.</div>
 <div id="dLista"></div>
 <div style="border:1px dashed var(--bd);border-radius:6px;padding:12px;background:#fdfffd;">
 <div class="row">
@@ -176,15 +176,18 @@ body > *{display:none !important;}
 <label>Observação para este ofício (opcional):</label>
 <textarea id="dObs" rows="2" placeholder="Ex: Pedido também encaminhado pelo CRC JUD..."></textarea>
 </div>
+<div style="margin-top:10px;">
+<button class="btn bo" onclick="salvarOfAtual()">+ Salvar esta solicitação e iniciar outra (outro cartório)</button>
+</div>
 </div>
 
 <div class="card">
-<h2>Gerar Ofício</h2>
+<h2>Gerar Ofícios</h2>
 <div class="row">
-<div class="fg" style="max-width:200px;"><label>Número do Ofício:</label><input id="dNum" type="number" min="1"></div>
-<div class="fg" style="display:flex;align-items:flex-end;"><button class="btn bv" style="width:100%;" onclick="gerarOficioDocs()">Gerar / Imprimir Ofício</button></div>
+<div class="fg" style="max-width:200px;"><label>Nº do primeiro Ofício:</label><input id="dNum" type="number" min="1"></div>
+<div class="fg" style="display:flex;align-items:flex-end;"><button class="btn bv" style="width:100%;" onclick="gerarOficioDocs()">Gerar / Imprimir Ofício(s)</button></div>
 </div>
-<div style="font-size:11px;color:#888;">A data do ofício é sempre a data de hoje. O número é sugerido automaticamente e pode ser alterado.</div>
+<div style="font-size:11px;color:#888;">A data é sempre a de hoje. Havendo mais de uma solicitação, os ofícios recebem números sequenciais e saem em uma única impressão, um por página. Depois de gerados, ficam no Histórico para reimpressão.</div>
 </div>
 </div><!-- /secDocs -->
 
@@ -398,6 +401,10 @@ return h;
 function pgContatos(){
 return '<div class="of-p">Qualquer dificuldade, a Defensoria Pública pode ser contatada por meio do telefone '+esc(SS.tel)+' e pelo e-mail '+esc(SS.eml)+'.</div>';
 }
+function pgEntrega(plural){
+var doc=plural?'Os documentos solicitados poderão ser entregues':'O documento solicitado poderá ser entregue';
+return '<div class="of-p">'+doc+' diretamente ao(à) portador(a) deste ofício &mdash; o(a) próprio(a) assistido(a) requerente &mdash; ou encaminhad'+(plural?'os':'o')+' a esta Defensoria por meio do e-mail '+esc(SS.eml)+' ou mediante contato pelo telefone '+esc(SS.tel)+', aqui cadastrados.</div>';
+}
 
 /* ===== IMPRIMIR ===== */
 /* A4 com margens de @page: largura util ~658px, altura util ~1031px (96dpi) */
@@ -410,14 +417,17 @@ var alt=med.scrollHeight;
 document.body.removeChild(med);
 return alt;
 }
-function imprimir(html){
+function imprimir(html){imprimirVarios([html]);}
+function imprimirVarios(htmls){
 var pa=document.getElementById('printArea');
+pa.innerHTML=htmls.map(function(html){
 /* Se nao couber em 1 pagina A4, tenta o modo compacto */
 if(alturaRender(html)>1024){
 var compacto=html.replace('class="of"','class="of compacto"');
 if(alturaRender(compacto)<=1024)html=compacto;
 }
-pa.innerHTML='<div class="qbra">'+html+'</div>';
+return '<div class="qbra">'+html+'</div>';
+}).join('');
 window.print();
 setTimeout(function(){pa.innerHTML='';},1000);
 }
@@ -456,6 +466,7 @@ renderHist();
    ABA 1 — SEGUNDAS VIAS E INTEIRO TEOR
    ============================================================ */
 var docs=[];
+var ofsSalvos=[];
 window.addDoc=function(){
 var tipo=val('dTipo');
 if(!tipo){alert('Selecione o tipo de documento.');return;}
@@ -476,23 +487,59 @@ d.appendChild(it);
 });
 }
 
-window.gerarOficioDocs=function(){
-var nome=val('dNome'),cpf=val('dCpf'),nasc=val('dNasc'),cart=val('dCart'),cartCid=val('dCartCid'),obs=val('dObs');
-var num=parseInt(val('dNum'),10);
-if(!nome){alert('Informe o nome do(a) assistido(a).');return;}
-if(!cart||!cartCid){alert('Informe o cartório e a cidade de destino.');return;}
-if(!docs.length){alert('Adicione ao menos um documento.');return;}
-if(!num||num<1){alert('Informe o número do ofício.');return;}
-var numLabel=numFmt(num);
-var g=gDefensor();
+/* Solicitações salvas: 1 por cartório de destino */
+function ofFormPreenchido(){return !!(val('dCart')||val('dCartCid')||docs.length||val('dObs'));}
+function limparOfForm(){
+docs=[];renderDocs();
+['dCart','dCartCid','dObs','dTipo','dTit','dNR','dLiv','dFol','dMat'].forEach(function(id){document.getElementById(id).value='';});
+}
+window.salvarOfAtual=function(){
+var cart=val('dCart'),cartCid=val('dCartCid');
+if(!cart||!cartCid){alert('Informe o cartório e a cidade de destino desta solicitação.');return;}
+if(!docs.length){alert('Adicione ao menos um documento nesta solicitação.');return;}
+ofsSalvos.push({cart:cart,cartCid:cartCid,obs:val('dObs'),docs:docs.slice()});
+limparOfForm();
+renderOfsSalvos();
+};
+window.editarOfSalvo=function(i){
+if(ofFormPreenchido()&&!confirm('A solicitação em preenchimento será descartada para editar a salva. Continuar?'))return;
+var of=ofsSalvos.splice(i,1)[0];
+limparOfForm();
+document.getElementById('dCart').value=of.cart;
+document.getElementById('dCartCid').value=of.cartCid;
+document.getElementById('dObs').value=of.obs||'';
+docs=of.docs.slice();
+renderDocs();
+renderOfsSalvos();
+};
+window.remOfSalvo=function(i){
+if(!confirm('Remover esta solicitação?'))return;
+ofsSalvos.splice(i,1);renderOfsSalvos();
+};
+function renderOfsSalvos(){
+var d=document.getElementById('dOfsSalvos');d.innerHTML='';
+ofsSalvos.forEach(function(of,i){
+var resumo=of.docs.map(function(doc){return tlbl(doc.tipo)+(doc.tit?' ('+doc.tit+')':'');}).join('; ');
+var div=document.createElement('div');div.className='hi';
+div.innerHTML='<div><h3>Solicitação '+(i+1)+' &mdash; '+esc(of.cart)+', '+esc(of.cartCid)+'</h3><p>'+esc(resumo)+'</p></div>'
++'<div style="display:flex;gap:6px;flex-wrap:wrap;">'
++'<button class="btn bo bsm" onclick="editarOfSalvo('+i+')">Editar</button>'
++'<button class="btn br bsm" onclick="remOfSalvo('+i+')">Remover</button>'
++'</div>';
+d.appendChild(div);
+});
+document.getElementById('dOfFormTit').innerText='Solicitação #'+(ofsSalvos.length+1);
+}
 
-var ender='À (o) Ilmo (a). Sr (a). Oficial (a) do(a) <strong>'+esc(cart)+'</strong> &ndash; '+esc(cartCid)+'.';
+function buildOficioDocs(of,nome,cpf,nasc,numLabel){
+var g=gDefensor();
+var ender='À (o) Ilmo (a). Sr (a). Oficial (a) do(a) <strong>'+esc(of.cart)+'</strong> &ndash; '+esc(of.cartCid)+'.';
 var html=ofHeader(numLabel,ender);
 html+='<div class="of-ass">Assunto: Solicitação de Documentos &ndash; Assistência Jurídica Gratuita.</div>';
 html+='<div class="of-p">A Defensoria Pública do Estado do Piauí, por meio '+g.rep+' com desempenho de atribuições no município de '+esc(SS.cid)+'-PI, no exercício de suas atribuições constitucionais previstas no art. 134 da Constituição Federal e com fulcro no art. 33, XXIV, da Lei Complementar Estadual nº 59/05, vem, perante V. Sa., solicitar a expedição dos documentos abaixo relacionados, em favor de <strong>'+esc(nome)+'</strong>'+(cpf?', CPF nº '+esc(cpf):'')+(nasc?', nascido(a) em '+esc(nasc):'')+'.</div>';
 html+='<div class="of-p">O(A) requerente é pessoa hipossuficiente, na condição de assistido(a) desta Defensoria Pública, fazendo jus à gratuidade nos termos do art. 1.512, parágrafo único, do Código Civil e da Lei nº 9.534/1997, que assegura a gratuidade no fornecimento das certidões de registro civil.</div>';
 html+='<div class="of-p" style="text-indent:0;"><strong>Documentos solicitados:</strong><ol>';
-docs.forEach(function(doc){
+of.docs.forEach(function(doc){
 var li='<strong>'+tlbl(doc.tipo)+'</strong>';
 li+=' &ndash; Titular: '+esc(doc.tit||nome);
 var campos=[];
@@ -504,17 +551,43 @@ if(campos.length)li+=' | '+campos.join(' | ');
 html+='<li>'+li+'</li>';
 });
 html+='</ol></div>';
-if(obs)html+='<div class="of-obs">Observação: '+esc(obs)+'</div>';
+if(of.obs)html+='<div class="of-obs">Observação: '+esc(of.obs)+'</div>';
 html+='<div class="of-p">Prazo sugerido para resposta: 30 (trinta) dias.</div>';
-html+='<div class="of-p">Solicitamos que, quando os documentos estiverem prontos, esta Defensoria seja comunicada em um dos contatos abaixo informados, a fim de que possamos encaminhar '+esc(nome)+' para buscá-los.</div>';
-html+=pgContatos();
+html+=pgEntrega(of.docs.length>1);
+html+='<div class="of-p">Solicitamos que, quando os documentos estiverem prontos, esta Defensoria seja comunicada em um dos contatos acima informados.</div>';
 html+='<div class="of-p">Caso não seja possível atender ao pleito, que seja expedida nota devolutiva.</div>';
 html+='<div class="of-p">Agradecendo antecipadamente a atenção dispensada, aproveito o ensejo para renovar protestos de estima e especial apreço.</div>';
 html+=ofFooter();
+return html;
+}
 
-registrarNum(num);
-salvarHist({id:Date.now(),tipoLabel:'2ª Vias / Inteiro Teor',numLabel:numLabel,assistido:nome,cartorio:cart,dt:new Date().toLocaleDateString('pt-BR'),html:html});
-imprimir(html);
+window.gerarOficioDocs=function(){
+var nome=val('dNome'),cpf=val('dCpf'),nasc=val('dNasc');
+var num=parseInt(val('dNum'),10);
+if(!nome){alert('Informe o nome do(a) assistido(a).');return;}
+if(!num||num<1){alert('Informe o número do ofício.');return;}
+/* Junta as solicitações salvas com a que estiver em preenchimento */
+var pend=ofsSalvos.slice();
+if(ofFormPreenchido()){
+var cart=val('dCart'),cartCid=val('dCartCid');
+if(!cart||!cartCid){alert('Informe o cartório e a cidade de destino da solicitação em preenchimento (ou limpe-a).');return;}
+if(!docs.length){alert('Adicione ao menos um documento na solicitação em preenchimento (ou limpe-a).');return;}
+pend.push({cart:cart,cartCid:cartCid,obs:val('dObs'),docs:docs.slice()});
+}
+if(!pend.length){alert('Preencha ao menos uma solicitação de ofício.');return;}
+var htmls=[];
+pend.forEach(function(of,i){
+var n=num+i;
+var numLabel=numFmt(n);
+var html=buildOficioDocs(of,nome,cpf,nasc,numLabel);
+salvarHist({id:Date.now()+i,tipoLabel:'2ª Vias / Inteiro Teor',numLabel:numLabel,assistido:nome,cartorio:of.cart,dt:new Date().toLocaleDateString('pt-BR'),html:html});
+registrarNum(n);
+htmls.push(html);
+});
+imprimirVarios(htmls);
+ofsSalvos=[];
+limparOfForm();
+renderOfsSalvos();
 document.getElementById('dNum').value='';
 sugerirNums();
 };
@@ -575,7 +648,8 @@ html+='<div class="of-p">Por oportuno, atendendo aos interesses d'+a.oa+' assist
 
 html+='<div class="of-p">Prazo sugerido para resposta: 10 (dez) dias.</div>';
 html+='<div class="of-p">Esclareço a Vossa Senhoria que a certidão deve ser emitida gratuitamente, vez que '+a.ass+' não tem condições de arcar com as custas referentes à expedição da referida certidão.</div>';
-html+='<div class="of-p">Solicitamos ainda que, quando o referido documento estiver pronto, esta Defensoria seja comunicada em um dos contatos abaixo informados, a fim de que possamos encaminhar '+a.ass+' para buscar o documento.</div>';
+html+=pgEntrega(false);
+html+='<div class="of-p">Solicitamos ainda que, quando o referido documento estiver pronto, esta Defensoria seja comunicada em um dos contatos acima informados.</div>';
 html+=pgContatos();
 html+='<div class="of-p">Caso não seja possível atender ao pleito, que seja expedida nota devolutiva.</div>';
 html+='<div class="of-p">Agradecendo antecipadamente a atenção dispensada, aproveito o ensejo para renovar protestos de estima e especial apreço.</div>';
