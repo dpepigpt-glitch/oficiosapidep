@@ -39,28 +39,40 @@ h2{color:var(--v);border-bottom:2px solid var(--vm);padding-bottom:6px;margin-bo
 body{margin:0;padding:0;background:#fff;}
 body > *{display:none !important;}
 .iprint{display:block !important;position:static !important;}
-@page{margin:1.5cm 2cm;size:A4 portrait;}
+@page{margin:1.2cm 1.8cm;size:A4 portrait;}
 .qbra{page-break-after:always;}
 .qbra:last-child{page-break-after:auto;}
 }
 
 /* ===== LAYOUT DO OFICIO ===== */
-.of{font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.6;text-align:justify;color:#000;}
-.of-head{text-align:center;border-bottom:2.5px solid var(--v);padding-bottom:10px;margin-bottom:18px;}
-.of-logo{width:150px;height:auto;display:block;margin:0 auto 8px;}
-.of-h2{font-weight:700;font-size:13pt;text-transform:uppercase;letter-spacing:.5px;}
-.of-num{display:flex;justify-content:space-between;gap:20px;margin-bottom:20px;flex-wrap:wrap;}
+.of{font-family:'Times New Roman',Times,serif;font-size:11.5pt;line-height:1.45;text-align:justify;color:#000;}
+.of-head{text-align:center;border-bottom:2.5px solid var(--v);padding-bottom:8px;margin-bottom:12px;}
+.of-logo{width:118px;height:auto;display:block;margin:0 auto 6px;}
+.of-h2{font-weight:700;font-size:12.5pt;text-transform:uppercase;letter-spacing:.5px;}
+.of-num{display:flex;justify-content:space-between;gap:20px;margin-bottom:12px;flex-wrap:wrap;}
 .of-num .nl{font-weight:700;white-space:nowrap;}
-.of-end{margin-bottom:18px;}
-.of-ass{margin-bottom:18px;font-weight:700;}
-.of-p{margin-bottom:12px;text-indent:42px;}
-.of-p ol{margin-top:6px;padding-left:60px;text-indent:0;}
-.of-p li{margin-bottom:6px;}
-.of-obs{font-style:italic;margin-bottom:12px;padding:4px 10px;border-left:3px solid var(--vm);}
-.of-sign{margin-top:44px;text-align:center;}
-.of-sign .sl{border-top:1px solid #000;width:60%;margin:0 auto 4px;}
+.of-end{margin-bottom:12px;}
+.of-ass{margin-bottom:12px;font-weight:700;background:#F1F8E9;border-left:3px solid var(--v2);padding:4px 10px;border-radius:0 3px 3px 0;}
+.of-p{margin-bottom:8px;text-indent:42px;}
+.of-p ol{margin-top:5px;padding-left:60px;text-indent:0;}
+.of-p li{margin-bottom:4px;}
+.of-obs{font-style:italic;margin-bottom:8px;padding:4px 10px;border-left:3px solid var(--vm);}
+.of-sign{margin-top:24px;text-align:center;page-break-inside:avoid;}
+.of-sign .sl{border-top:1px solid #000;width:55%;margin:0 auto 4px;}
 .of-sign .sn{font-weight:700;text-transform:uppercase;}
-.of-foot{border-top:1px solid #ddd;margin-top:22px;padding-top:5px;font-size:8pt;color:#666;font-family:Arial,sans-serif;text-align:center;}
+.of-foot{border-top:1px solid #ddd;margin-top:16px;padding-top:4px;font-size:8pt;color:#666;font-family:Arial,sans-serif;text-align:center;}
+/* Modo compacto: aplicado automaticamente quando o oficio nao cabe em 1 pagina A4 */
+.of.compacto{font-size:10.5pt;line-height:1.3;}
+.of.compacto .of-logo{width:80px;}
+.of.compacto .of-head{padding-bottom:4px;margin-bottom:8px;}
+.of.compacto .of-num{margin-bottom:8px;}
+.of.compacto .of-end,.of.compacto .of-ass{margin-bottom:8px;}
+.of.compacto .of-ass{padding:3px 8px;}
+.of.compacto .of-p{margin-bottom:4px;}
+.of.compacto .of-p li{margin-bottom:2px;}
+.of.compacto .of-sign{margin-top:10px;}
+.of.compacto .of-sign .sp{height:22px !important;}
+.of.compacto .of-foot{margin-top:6px;}
 </style>
 </head>
 <body>
@@ -228,7 +240,7 @@ body > *{display:none !important;}
 <div class="row">
 <div class="fg"><label>Motivo:</label><select id="pMotivo"><option value="">Selecione...</option><option value="casamento">Casamento</option><option value="divorcio">Divórcio</option></select></div>
 <div class="fg"><label>Quem teve o nome alterado:</label><select id="pQuem"><option value="">Selecione...</option><option value="genitora">Genitora (mãe)</option><option value="genitor">Genitor (pai)</option></select></div>
-<div class="fg"><label>Data do Casamento / Divórcio:</label><input id="pDtMot" type="text" maxlength="10" placeholder="DD/MM/AAAA" oninput="mdat(this)"></div>
+<div class="fg"><label>Mês e Ano do Casamento / Divórcio:</label><input id="pDtMot" type="text" maxlength="7" placeholder="MM/AAAA" oninput="mmesano(this)"></div>
 </div>
 <div class="row">
 <div class="fg"><label>Nome do(a) genitor(a) como está na certidão atual:</label><input id="pNomeAtual" type="text"></div>
@@ -269,6 +281,7 @@ var SS=null;
 /* ===== UTIL ===== */
 function mcpf(e){var v=e.value.replace(/\D/g,'');if(v.length>11)v=v.slice(0,11);v=v.replace(/(\d{3})(\d)/,'$1.$2');v=v.replace(/(\d{3})(\d)/,'$1.$2');v=v.replace(/(\d{3})(\d{1,2})$/,'$1-$2');e.value=v;}
 function mdat(e){var v=e.value.replace(/\D/g,'');if(v.length>8)v=v.slice(0,8);v=v.replace(/(\d{2})(\d)/,'$1/$2');v=v.replace(/(\d{2})(\d)/,'$1/$2');e.value=v;}
+function mmesano(e){var v=e.value.replace(/\D/g,'');if(v.length>6)v=v.slice(0,6);v=v.replace(/(\d{2})(\d)/,'$1/$2');e.value=v;}
 function mtel(e){var v=e.value.replace(/\D/g,'');if(v.length>11)v=v.slice(0,11);if(v.length<=10){v=v.replace(/(\d{2})(\d)/,'($1) $2');v=v.replace(/(\d{4})(\d)/,'$1-$2');}else{v=v.replace(/(\d{2})(\d)/,'($1) $2');v=v.replace(/(\d{5})(\d)/,'$1-$2');}e.value=v;}
 function ctit(s){return s.replace(/(?:^|[\s\-])\S/g,function(c){return c.toUpperCase();});}
 
@@ -295,6 +308,11 @@ function dataExtensoBR(s){ /* DD/MM/AAAA -> "22 de abril de 2026" */
 var m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s||'');
 if(!m)return s||'';
 return parseInt(m[1],10)+' de '+MSA[parseInt(m[2],10)-1]+' de '+m[3];
+}
+function mesAnoExtenso(s){ /* MM/AAAA -> "abril de 2026" */
+var m=/^(\d{2})\/(\d{4})$/.exec(s||'');
+if(!m)return s||'';
+return MSA[parseInt(m[1],10)-1]+' de '+m[2];
 }
 
 /* Extrai a cidade a partir do nome da defensoria: "2ª Defensoria de Campo Maior-PI" -> "Campo Maior" */
@@ -372,8 +390,7 @@ return h;
 }
 function ofFooter(){
 var g=gDefensor();
-var h='<div class="of-p" style="text-indent:0;margin-top:20px;">Atenciosamente,</div>';
-h+='<div class="of-sign"><div style="height:26px;"></div><div class="sl"></div><div class="sn">'+esc(SS.nm)+'</div><div>'+g.cargo+'</div><div>'+esc(SS.def)+'</div></div>';
+var h='<div class="of-sign"><div style="text-align:left;text-indent:42px;">Atenciosamente,</div><div class="sp" style="height:34px;"></div><div class="sl"></div><div class="sn">'+esc(SS.nm)+'</div><div>'+g.cargo+'</div><div>'+esc(SS.def)+'</div></div>';
 h+='<div class="of-foot">Ofício gerado pelo Sistema de Ofícios — Defensoria Pública do Estado do Piauí</div>';
 h+='</div>';
 return h;
@@ -383,8 +400,23 @@ return '<div class="of-p">Qualquer dificuldade, a Defensoria Pública pode ser c
 }
 
 /* ===== IMPRIMIR ===== */
+/* A4 com margens de @page: largura util ~658px, altura util ~1031px (96dpi) */
+function alturaRender(html){
+var med=document.createElement('div');
+med.style.cssText='position:absolute;left:-9999px;top:0;width:658px;';
+med.innerHTML=html;
+document.body.appendChild(med);
+var alt=med.scrollHeight;
+document.body.removeChild(med);
+return alt;
+}
 function imprimir(html){
 var pa=document.getElementById('printArea');
+/* Se nao couber em 1 pagina A4, tenta o modo compacto */
+if(alturaRender(html)>1024){
+var compacto=html.replace('class="of"','class="of compacto"');
+if(alturaRender(compacto)<=1024)html=compacto;
+}
 pa.innerHTML='<div class="qbra">'+html+'</div>';
 window.print();
 setTimeout(function(){pa.innerHTML='';},1000);
@@ -515,7 +547,7 @@ var numLabel=numFmt(num);
 var g=gDefensor();
 var a=gAssist(sx);
 var quemTxt=quem==='genitora'?{de:'de sua genitora',oa:'a genitora',poss:'sua genitora'}:{de:'de seu genitor',oa:'o genitor',poss:'seu genitor'};
-var motivoTxt=motivo==='casamento'?'do casamento celebrado':'do divórcio decretado';
+var motivoTxt=motivo==='casamento'?'do casamento ocorrido':'do divórcio ocorrido';
 var repTxt='';
 if(rep){
 var vinc=(rep==='outro')?(repOutro||'representante'):rep;
@@ -537,7 +569,7 @@ html+='<div class="of-p">'+a.assC+' <strong>'+esc(nome)+'</strong> nasceu no dia
 
 html+='<div class="of-p">No campo de filiação do referido assento consta o nome '+quemTxt.de+' grafado como <strong>'+esc(nomeAtual)+'</strong>, conforme documento anexo.</div>';
 
-html+='<div class="of-p">Ocorre que, em razão '+motivoTxt+(dtMot?' em '+esc(dataExtensoBR(dtMot)):'')+', '+quemTxt.oa+' d'+a.oa+' assistid'+a.oa+' passou a se chamar <strong>'+esc(nomeNovo)+'</strong>, conforme documentação anexa, de modo que o assento de nascimento d'+a.oa+' assistid'+a.oa+' não mais reflete o nome atual de '+quemTxt.poss+'.</div>';
+html+='<div class="of-p">Ocorre que, em razão '+motivoTxt+(dtMot?' em '+esc(mesAnoExtenso(dtMot)):'')+', '+quemTxt.oa+' d'+a.oa+' assistid'+a.oa+' passou a se chamar <strong>'+esc(nomeNovo)+'</strong>, conforme documentação anexa, de modo que o assento de nascimento d'+a.oa+' assistid'+a.oa+' não mais reflete o nome atual de '+quemTxt.poss+'.</div>';
 
 html+='<div class="of-p">Por oportuno, atendendo aos interesses d'+a.oa+' assistid'+a.oa+' <strong>'+esc(nome)+'</strong>, requer-se a retificação do assento de nascimento, nos termos do artigo 110, I, da Lei nº 6.015/73, para que no campo de filiação passe a constar o nome atualizado de '+quemTxt.poss+', a saber: <strong>'+esc(nomeNovo)+'</strong>.</div>';
 
@@ -556,7 +588,7 @@ document.getElementById('pNum').value='';
 sugerirNums();
 };
 
-window.mcpf=mcpf;window.mdat=mdat;window.mtel=mtel;window.ctit=ctit;
+window.mcpf=mcpf;window.mdat=mdat;window.mmesano=mmesano;window.mtel=mtel;window.ctit=ctit;
 })();
 </script>
 </body>
