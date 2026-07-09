@@ -19,6 +19,10 @@ nos contatos de todos os ofícios gerados.
 2. **Alteração de Patronímico** — retificação do registro civil de nascimento em razão
    de alteração do nome do genitor ou da genitora por casamento ou divórcio
    (art. 33, XXIV, da LC 59/05 e art. 110, I, da Lei 6.015/73).
+3. **Prenome e Gênero** — alteração de prenome e gênero no registro civil pela via
+   administrativa, em ambos os sentidos (feminino → masculino e masculino → feminino),
+   com nome social (ADI 4.275/STF, Provimentos 73/2018, 149/2023 e 152/2023 do CNJ e
+   art. 56 e ss. da Lei 6.015/73).
 
 ## Outros recursos
 

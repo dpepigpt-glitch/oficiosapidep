@@ -128,6 +128,7 @@ body > *{display:none !important;}
 <div class="tabs">
 <div class="tab on" id="tabDocs" onclick="aba('docs')">2ª Vias e Inteiro Teor</div>
 <div class="tab" id="tabPatro" onclick="aba('patro')">Alteração de Patronímico</div>
+<div class="tab" id="tabPg" onclick="aba('pg')">Prenome e Gênero</div>
 <div class="tab" id="tabHist" onclick="aba('hist')">Histórico</div>
 </div>
 
@@ -288,7 +289,53 @@ body > *{display:none !important;}
 </div>
 </div><!-- /secPatro -->
 
-<!-- ===== ABA 3: HISTORICO ===== -->
+<!-- ===== ABA 3: ALTERACAO DE PRENOME E GENERO ===== -->
+<div id="secPg" style="display:none;">
+<div class="card">
+<h2>Alteração de Prenome e Gênero</h2>
+<div class="hint">Alteração de prenome e gênero no registro civil pela via administrativa, nos termos do Provimento nº 73/2018 do CNJ e do art. 56 e ss. da Lei 6.015/73. A mudança pode ser do gênero <strong>feminino para o masculino</strong> ou do <strong>masculino para o feminino</strong>.</div>
+
+<div style="font-weight:700;font-size:13px;color:var(--v3);margin-bottom:8px;">Identificação</div>
+<div class="row">
+<div class="fg" style="flex:3;"><label>Nome civil (como consta no registro):</label><input id="pgNome" type="text"></div>
+<div class="fg"><label>CPF:</label><input id="pgCpf" type="text" maxlength="14" placeholder="000.000.000-00" oninput="mcpf(this)"></div>
+</div>
+<div class="row">
+<div class="fg" style="flex:2;"><label>Nome social (novo nome completo):</label><input id="pgSocial" type="text"></div>
+<div class="fg"><label>Prenome pretendido:</label><input id="pgPrenome" type="text" placeholder="Ex: Noah"></div>
+<div class="fg"><label>Mudança de gênero:</label><select id="pgMud"><option value="">Selecione...</option><option value="FM">Feminino &rarr; Masculino</option><option value="MF">Masculino &rarr; Feminino</option></select></div>
+</div>
+<div class="row">
+<div class="fg"><label>Data de Nascimento:</label><input id="pgNasc" type="text" maxlength="10" placeholder="DD/MM/AAAA" oninput="mdat(this)"></div>
+<div class="fg"><label>Nome da Mãe:</label><input id="pgMae" type="text"></div>
+<div class="fg"><label>Nome do Pai:</label><input id="pgPai" type="text"></div>
+</div>
+
+<div style="font-weight:700;font-size:13px;color:var(--v3);margin:16px 0 8px;">Dados do Registro de Nascimento</div>
+<div class="row">
+<div class="fg" style="flex:2;"><label>Cartório (destinatário do ofício):</label><input id="pgCart" type="text" placeholder="Ex: 1ª Serventia Extrajudicial de Registro Geral de Campo Maior - PI"></div>
+<div class="fg" style="flex:2;"><label>Cartório onde o registro foi lavrado (se diferente):</label><input id="pgCartReg" type="text" placeholder="Deixe vazio se for o mesmo"></div>
+</div>
+<div class="row">
+<div class="fg"><label>Livro:</label><input id="pgLiv" type="text" oninput="this.value=this.value.toUpperCase()"></div>
+<div class="fg"><label>Folhas:</label><input id="pgFol" type="text"></div>
+<div class="fg"><label>Termo nº:</label><input id="pgTermo" type="text"></div>
+<div class="fg" style="flex:2;"><label>Matrícula:</label><input id="pgMat" type="text"></div>
+<div class="fg"><label>Mês/Ano da via antiga (opcional):</label><input id="pgVia" type="text" maxlength="7" placeholder="MM/AAAA" oninput="mmesano(this)"></div>
+</div>
+</div>
+
+<div class="card">
+<h2>Gerar Ofício</h2>
+<div class="row">
+<div class="fg" style="max-width:200px;"><label>Número do Ofício:</label><input id="pgNum" type="number" min="1"></div>
+<div class="fg" style="display:flex;align-items:flex-end;"><button class="btn bv" style="width:100%;" onclick="gerarOficioPg()">Gerar / Imprimir Ofício</button></div>
+</div>
+<div style="font-size:11px;color:#888;">A data do ofício é sempre a data de hoje. O número é sugerido automaticamente e pode ser alterado.</div>
+</div>
+</div><!-- /secPg -->
+
+<!-- ===== ABA 4: HISTORICO ===== -->
 <div id="secHist" style="display:none;">
 <div class="card">
 <h2>Ofícios Gerados</h2>
@@ -317,7 +364,7 @@ function ctit(s){return s.replace(/(?:^|[\s\-])\S/g,function(c){return c.toUpper
 
 /* Capitaliza automaticamente a inicial de cada palavra em todos os campos de texto,
    preservando a posição do cursor. Campos com formato próprio ficam de fora. */
-var SEM_CAP={lgTel:1,lgSig:1,lgEnd:1,dCpf:1,pCpf:1,dNasc:1,dNascTit:1,pNasc:1,pDtMot:1};
+var SEM_CAP={lgTel:1,lgSig:1,lgEnd:1,dCpf:1,pCpf:1,dNasc:1,dNascTit:1,pNasc:1,pDtMot:1,pgCpf:1,pgNasc:1,pgVia:1};
 document.addEventListener('input',function(ev){
 var el=ev.target;
 if(!el||!el.id||SEM_CAP[el.id])return;
@@ -360,7 +407,7 @@ if(c)c.value=extrairCidade(val('lgDef'));
 /* ===== NUMERACAO ===== */
 function proxNum(){return parseInt(localStorage.getItem('of_seq')||'0',10)+1;}
 function registrarNum(n){var a=parseInt(localStorage.getItem('of_seq')||'0',10);if(n>a)localStorage.setItem('of_seq',String(n));}
-function sugerirNums(){var n=proxNum();['dNum','pNum'].forEach(function(id){var el=document.getElementById(id);if(el&&!el.value)el.value=n;});}
+function sugerirNums(){var n=proxNum();['dNum','pNum','pgNum'].forEach(function(id){var el=document.getElementById(id);if(el&&!el.value)el.value=n;});}
 function numFmt(n){var ano=new Date().getFullYear();return n+'.'+ano+(SS.sig?' - '+SS.sig:'');}
 
 /* ===== SESSAO (SEM SENHA) ===== */
@@ -399,10 +446,10 @@ try{var s=JSON.parse(localStorage.getItem('of_sess')||'null');if(s&&s.nm){SS=s;i
 
 /* ===== ABAS ===== */
 window.aba=function(nm){
-['secDocs','secPatro','secHist'].forEach(function(id){document.getElementById(id).style.display='none';});
-['tabDocs','tabPatro','tabHist'].forEach(function(id){document.getElementById(id).classList.remove('on');});
-document.getElementById(nm==='docs'?'secDocs':nm==='patro'?'secPatro':'secHist').style.display='block';
-document.getElementById(nm==='docs'?'tabDocs':nm==='patro'?'tabPatro':'tabHist').classList.add('on');
+['secDocs','secPatro','secPg','secHist'].forEach(function(id){document.getElementById(id).style.display='none';});
+['tabDocs','tabPatro','tabPg','tabHist'].forEach(function(id){document.getElementById(id).classList.remove('on');});
+document.getElementById(nm==='docs'?'secDocs':nm==='patro'?'secPatro':nm==='pg'?'secPg':'secHist').style.display='block';
+document.getElementById(nm==='docs'?'tabDocs':nm==='patro'?'tabPatro':nm==='pg'?'tabPg':'tabHist').classList.add('on');
 if(nm==='hist')renderHist();
 sugerirNums();
 };
@@ -448,10 +495,12 @@ function imprimir(html){imprimirVarios([html]);}
 function imprimirVarios(htmls){
 var pa=document.getElementById('printArea');
 pa.innerHTML=htmls.map(function(html){
-/* Se nao couber em 1 pagina A4, tenta o modo compacto */
-if(alturaRender(html)>1024){
+/* Se nao couber em 1 pagina A4, usa o modo compacto quando ele reduzir o total de paginas */
+var altN=alturaRender(html);
+if(altN>1024){
 var compacto=html.replace('class="of"','class="of compacto"');
-if(alturaRender(compacto)<=1024)html=compacto;
+var altC=alturaRender(compacto);
+if(Math.ceil(altC/1031)<Math.ceil(altN/1031))html=compacto;
 }
 return '<div class="qbra">'+html+'</div>';
 }).join('');
@@ -715,6 +764,69 @@ registrarNum(num);
 salvarHist({id:Date.now(),tipoLabel:'Alteração de Patronímico',numLabel:numLabel,assistido:nome,cartorio:cart,dt:new Date().toLocaleDateString('pt-BR'),html:html});
 imprimir(html);
 document.getElementById('pNum').value='';
+sugerirNums();
+};
+
+/* ============================================================
+   ABA 3 — ALTERACAO DE PRENOME E GENERO (Prov. 73/2018 CNJ)
+   ============================================================ */
+window.gerarOficioPg=function(){
+var nome=val('pgNome'),cpf=val('pgCpf'),social=val('pgSocial'),prenome=val('pgPrenome');
+var mud=document.getElementById('pgMud').value;
+var nasc=val('pgNasc'),mae=val('pgMae'),pai=val('pgPai');
+var cart=val('pgCart'),cartReg=val('pgCartReg')||cart;
+var liv=val('pgLiv'),fol=val('pgFol'),termo=val('pgTermo'),mat=val('pgMat'),via=val('pgVia');
+var num=parseInt(val('pgNum'),10);
+
+if(!nome||!cpf){alert('Informe o nome civil e o CPF.');return;}
+if(!social||!prenome){alert('Informe o nome social (novo nome completo) e o prenome pretendido.');return;}
+if(!mud){alert('Informe a mudança de gênero (feminino para masculino ou masculino para feminino).');return;}
+if(!cart){alert('Informe o cartório destinatário.');return;}
+if(!num||num<1){alert('Informe o número do ofício.');return;}
+
+var numLabel=numFmt(num);
+var g=gDefensor();
+/* Concordância pelo gênero pretendido */
+var t=mud==='FM'
+?{orig:'feminino',novo:'masculino',nascido:'nascido',filho:'filho',ass:'o assistido',assC:'O assistido',inscr:'inscrito',apto:'apto',ele:'ele',tratado:'tratado',conhecido:'conhecido'}
+:{orig:'masculino',novo:'feminino',nascido:'nascida',filho:'filha',ass:'a assistida',assC:'A assistida',inscr:'inscrita',apto:'apta',ele:'ela',tratado:'tratada',conhecido:'conhecida'};
+var filiacao=[mae,pai].filter(Boolean).join(' e ');
+
+var ender='À (o) Ilmo (a). Sr (a). Oficial (a) do(a) <strong>'+esc(cart)+'</strong>.';
+var html=ofHeader(numLabel,ender);
+html+='<div class="of-ass">Assunto: Solicitação de alteração de prenome e gênero nos termos do Provimento nº 73 do CNJ e do art. 56 e ss. da Lei 6.015/73 (Lei de Registros Públicos).</div>';
+
+html+='<div class="of-p">A Defensoria Pública do Estado do Piauí, por meio '+g.rep+' com desempenho de atribuições na '+esc(SS.def)+', vem, perante V. Sa., com fulcro no art. 128, X, da Lei Complementar Federal nº 80/94 e no art. 33, XXIV, da Lei Complementar Estadual nº 59/05, encaminhar <strong>'+esc(nome)+'</strong>, '+t.inscr+' no CPF sob nº '+esc(cpf)+', cujo nome social é <strong>'+esc(social)+'</strong>'+(nasc?', '+t.nascido+' em '+esc(dataExtensoBR(nasc)):'')+(filiacao?', '+t.filho+' de '+esc(filiacao):'')+', conforme consta na certidão de nascimento e documentos pessoais anexos, para que seja feita a alteração do seu prenome e gênero.</div>';
+
+var reg=[];
+if(fol)reg.push('às fls. '+esc(fol));
+if(liv)reg.push('do livro '+esc(liv));
+if(termo)reg.push('termo nº '+esc(termo));
+if(mat)reg.push('nº de matrícula: '+esc(mat));
+html+='<div class="of-p"><strong>'+esc(nome)+'</strong> nasceu no gênero '+t.orig+' e, por tal razão, seus genitores lhe atribuíram o prenome que consta no seu assento de nascimento, registrado'+(reg.length?' '+reg.join(', '):'')+', no(a) '+esc(cartReg)+'.</div>';
+
+html+='<div class="of-p">Por não se identificar com o gênero '+t.orig+' que lhe foi atribuído no seu nascimento e tampouco com o prenome escolhido por seus genitores, '+t.ass+' manifesta a vontade livre e consciente de alterar sua identidade civil e a designação sexual constante no seu registro civil de nascimento, a fim de que passe a constar o gênero '+t.novo+' e o prenome <strong>'+esc(prenome.toUpperCase())+'</strong>, pelo qual é socialmente '+t.conhecido+' (requerimento anexo).</div>';
+
+html+='<div class="of-p">O fundamento principal para a alteração de prenome e gênero no registro civil no Brasil é o direito à dignidade da pessoa humana e o princípio da autodeterminação (identidade de gênero), garantidos pelo STF (ADI 4.275/DF) e regulamentados pelos Provimentos nº 73/2018, nº 149, de 30/08/2023, e nº 152, de 26/09/2023, todos do CNJ, combinados com o art. 56 e seguintes da Lei 6.015/73 (Lei de Registros Públicos), permitindo que travestis e transexuais alterem documentos sem exigência de cirurgia ou laudos médicos.</div>';
+
+html+='<div class="of-p">Insta mencionar que se trata de procedimento de índole administrativa, que será realizado com base na autonomia da pessoa, que deverá declarar, perante o registrador do RCPN, a vontade de proceder à adequação da identidade mediante a averbação do prenome, do gênero ou de ambos, e que independe de prévia autorização judicial ou da comprovação de realização de cirurgia de redesignação sexual, de tratamento hormonal ou patologizante.</div>';
+
+html+='<div class="of-p"><strong>'+esc(nome)+'</strong>, cujo nome social é <strong>'+esc(social)+'</strong>, é maior de idade e está '+t.apto+' para os atos da vida civil. Ademais, demonstra total certeza na alteração aqui solicitada e, para tanto, anexa ao presente ofício os documentos listados no § 6º do artigo 4º do Provimento nº 73/2018 e no artigo 518, § 6º, do Provimento nº 149, de 30/08/2023, ambos do CNJ, especialmente o requerimento preenchido de próprio punho e por '+t.ele+' assinado, onde consta expressamente o seu interesse em ser '+t.tratado+' pelo prenome <strong>'+esc(prenome.toUpperCase())+'</strong> e pelo gênero '+t.novo+', e que tais dados passem a constar no seu assento de nascimento.</div>';
+
+if(via)html+='<div class="of-p">Ressalta-se que, entre os documentos listados nos supramencionados dispositivos, solicita-se, para que seja permitida a alteração de prenome e gênero pela via administrativa, a apresentação de uma via atualizada da certidão de nascimento da pessoa interessada &mdash; e a via que '+t.ass+' possui é datada de '+esc(mesAnoExtenso(via))+'. Assim, caso o Cartório exija tal documento atualizado, requer-se, por meio deste ofício, que seja expedida via atualizada do assento de nascimento de <strong>'+esc(nome)+'</strong> sem a cobrança de emolumentos, taxas ou selos, por ser hipossuficiente na forma da lei e não poder arcar com tais encargos, sendo a mesma anexada à solicitação de alteração aqui pleiteada.</div>';
+
+html+='<div class="of-p">Por todo o exposto, requer-se a alteração do prenome e do gênero no assento de nascimento de <strong>'+esc(nome)+'</strong>, nos termos dos Provimentos nº 73/2018 e nº 149/2023, ambos do CNJ, e do art. 56 e ss. da Lei 6.015/73 (Lei de Registros Públicos), com base nas documentações anexas, passando a constar o nome <strong>'+esc(social.toUpperCase())+'</strong> e o gênero '+t.novo+'. Ademais, que a via da certidão de nascimento com a alteração acima seja expedida gratuitamente, em face da hipossuficiência da parte assistida.</div>';
+
+html+='<div class="of-p">Prazo sugerido: 30 (trinta) dias.</div>';
+html+=pgEntregaComunic(false);
+html+='<div class="of-p">Na eventualidade de a solicitação aqui pleiteada não ser cumprida, pugnamos pela negativa devidamente fundamentada.</div>';
+html+='<div class="of-p">Agradecendo antecipadamente a atenção dispensada, aproveito o ensejo para renovar protestos de estima e especial apreço.</div>';
+html+=ofFooter();
+
+registrarNum(num);
+salvarHist({id:Date.now(),tipoLabel:'Prenome e Gênero',numLabel:numLabel,assistido:nome+' ('+social+')',cartorio:cart,dt:new Date().toLocaleDateString('pt-BR'),html:html});
+imprimir(html);
+document.getElementById('pgNum').value='';
 sugerirNums();
 };
 
